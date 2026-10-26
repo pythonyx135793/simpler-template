@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% block body %}<h2>{{ 'Edit entry' if entry else 'New entry' }}</h2>
+<form method="post">{% for f in fields %}<p><label>{{ f|capitalize }}<br>
+<input name="{{ f }}" value="{{ entry[f] if entry else '' }}" size="60"></label></p>{% endfor %}
+<button>{{ 'Submit for review' if review_gate and not user.is_admin else 'Save' }}</button></form>{% endblock %}
