@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% block body %}<h2>History of entry #{{ entry_id }}</h2>
+<table><tr><th>When</th><th>Who</th><th>Status</th>{% for f in fields %}<th>{{ f }}</th>{% endfor %}</tr>
+{% for r in rows %}<tr><td>{{ r.created_at }}</td><td>{{ r.author }}</td><td>{{ r.status }}</td>{% for f in fields %}<td>{{ r[f] }}</td>{% endfor %}</tr>{% endfor %}
+</table>{% endblock %}

@@ -1,0 +1,9 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Shared database</title>
+<style>body{font-family:sans-serif;max-width:900px;margin:2em auto}table{border-collapse:collapse;width:100%}
+td,th{border:1px solid #ccc;padding:6px}.flash{background:#e6ffe6;padding:8px}button,.btn{padding:6px 12px}</style>
+</head><body><nav><a href="{{ url_for('index') }}">Entries</a>
+{% if user %} | {{ user.name }}{% if user.is_admin %} | <a href="{{ url_for('admin') }}">Admin</a>{% endif %}
+ | <a href="{{ url_for('logout') }}">Log out</a>{% else %} | <a href="{{ url_for('login') }}">Log in</a>{% endif %}
+ | Review gate: <b>{{ 'ON' if review_gate else 'OFF' }}</b></nav><hr>
+{% for m in get_flashed_messages() %}<p class="flash">{{ m }}</p>{% endfor %}
+{% block body %}{% endblock %}</body></html>
