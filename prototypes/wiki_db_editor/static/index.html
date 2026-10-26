@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simpler Co-op | Wiki-Style Database Editor</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="logo-area">
+        <span class="logo-badge">Simpler Co-op</span>
+        <h1>Wiki Database Editor</h1>
+        <span class="prototype-tag">ADR-0001 Working Prototype</span>
+      </div>
+      <div class="user-session">
+        <div class="user-profile">
+          <span class="avatar" id="user-avatar">👤</span>
+          <div>
+            <div class="user-name" id="user-name">Loading...</div>
+            <div class="user-role-badge" id="user-role">...</div>
+          </div>
+        </div>
+        <div class="profile-switcher">
+          <label for="persona-select">Switch Persona:</label>
+          <select id="persona-select" onchange="switchPersona(this.value)">
+            <option value="usr_user_1">Bob Contributor (Google)</option>
+            <option value="usr_admin_1">Alice Admin (GitHub)</option>
+            <option value="usr_spammer_9">Spam Bot (GitHub)</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <div class="gate-banner" id="gate-banner">
+      <div class="gate-info">
+        <span class="gate-status-pill" id="gate-pill">GATE: ACTIVE</span>
+        <span id="gate-description">Admin Review Gate is enabled. All contributions will be staged in the review queue until approved.</span>
+      </div>
+      <div class="gate-toggle-container" id="admin-gate-controls" style="display: none;">
+        <label class="switch">
+          <input type="checkbox" id="gate-checkbox" onchange="toggleGate(this.checked)">
+          <span class="slider round"></span>
+        </label>
+        <span class="switch-label">Admin Review Gate</span>
+      </div>
+    </div>
+
+    <nav class="nav-tabs">
+      <button class="tab-btn active" onclick="showTab('records-tab')">📊 Database Records</button>
+      <button class="tab-btn" id="pending-tab-btn" onclick="showTab('pending-tab')">
+        ⏳ Review Queue <span class="badge" id="pending-count">0</span>
+      </button>
+      <button class="tab-btn" onclick="showTab('audit-tab')">📜 Audit Trail</button>
+      <button class="tab-btn" id="moderation-tab-btn" onclick="showTab('moderation-tab')" style="display: none;">🛡️ Moderation</button>
+    </nav>
+
+    <!-- TAB 1: Database Records -->
+    <main class="tab-content" id="records-tab">
+      <div class="toolbar">
+        <h2>Live Database Table</h2>
+        <button class="btn btn-primary" onclick="openNewModal()">+ Submit New Entry</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 60px;">ID</th>
+              <th style="width: 220px;">Title</th>
+              <th style="width: 150px;">Category</th>
+              <th>Content / Data</th>
+              <th style="width: 160px;">Last Modified By</th>
+              <th style="width: 100px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="records-tbody">
+            <tr><td colspan="6" class="loading">Loading database records...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- TAB 2: Admin Review Queue -->
+    <main class="tab-content" id="pending-tab" style="display: none;">
+      <div class="toolbar">
+        <h2>Pending Submissions (Staging Queue)</h2>
+        <span class="subtitle">Review and approve changes before they are committed to the primary database.</span>
+      </div>
+
+      <div id="pending-list" class="pending-list">
+        <!-- Rendered by JS -->
+      </div>
+    </main>
+
+    <!-- TAB 3: Audit Trail -->
+    <main class="tab-content" id="audit-tab" style="display: none;">
+      <div class="toolbar">
+        <h2>Audit History & Provenance</h2>
+        <span class="subtitle">Every modification is timestamped and cryptographically traceable to a verified user.</span>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Log ID</th>
+              <th>Operation</th>
+              <th>Record ID</th>
+              <th>Field</th>
+              <th>Previous Value</th>
+              <th>New Value</th>
+              <th>User</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody id="audit-tbody">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- TAB 4: Moderation Tools -->
+    <main class="tab-content" id="moderation-tab" style="display: none;">
+      <div class="toolbar">
+        <h2>User Moderation & Revert Control</h2>
+        <span class="subtitle">ADR Nice-to-Have #2: Purge or revert all contributions made by a specific user with one click.</span>
+      </div>
+
+      <div class="card card-danger">
+        <h3>Purge Contributor Edits</h3>
+        <p>If an account is identified as compromised, spamming, or unreliable, this action immediately restores all records modified by the user back to their prior state and discards their pending edits.</p>
+        <div class="purge-form">
+          <label>Target User:</label>
+          <select id="purge-user-select">
+            <option value="usr_spammer_9">Spam Bot (usr_spammer_9)</option>
+            <option value="usr_user_1">Bob Contributor (usr_user_1)</option>
+          </select>
+          <button class="btn btn-danger" onclick="revertUser()">Revert All Edits By User</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Edit/New Modal -->
+    <div class="modal-backdrop" id="entry-modal" style="display: none;">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="modal-title">Edit Entry</h3>
+          <button class="close-btn" onclick="closeModal()">×</button>
+        </div>
+        <form id="record-form" onsubmit="submitRecordForm(event)">
+          <input type="hidden" id="form-record-id">
+          <div class="form-group">
+            <label for="form-title">Title</label>
+            <input type="text" id="form-title" required placeholder="e.g. Governance Guidelines">
+          </div>
+          <div class="form-group">
+            <label for="form-category">Category</label>
+            <input type="text" id="form-category" required placeholder="e.g. Operations, Legal, Tooling">
+          </div>
+          <div class="form-group">
+            <label for="form-content">Content / Field Data</label>
+            <textarea id="form-content" rows="4" required placeholder="Enter database content..."></textarea>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="modal-submit-btn">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
