@@ -299,7 +299,43 @@ The public submits through a form, rows get a "Status" field, and the public vie
   * Bad, because there is no GitHub login.
 
 ## Links
-
 * [Prototype source and README](../../prototypes/wiki_db_editing/README.md)
 * [NocoDB](https://nocodb.com/) · [Baserow](https://baserow.io/) · [Airtable forms](https://support.airtable.com/docs/creating-forms-in-airtable) · [Supabase](https://supabase.com/)
 * [GitHub OAuth apps](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps) · [Google OAuth 2.0](https://developers.google.com/identity/protocols/oauth2/web-server)
+
+# Response from tamamatuaai 
+
+## Additional proposed option: SQLite contribution-review notebook
+
+This is a proposed option for maintainers to evaluate, not a claim that the organization has adopted it.
+
+**Working prototype and startup instructions:** [prototypes/wiki_sql](../../prototypes/wiki_sql/README.md).
+Run `sh prototypes/wiki_sql/run.sh --demo` from the repository root. The self-contained Python standard-library application stores data in SQLite and opens at `http://127.0.0.1:8000`. Real GitHub OAuth is separately configurable through environment variables; demonstration mode is explicitly labeled and isolated from the real-login database.
+
+### How it satisfies the must-haves
+
+| Requirement | Implementation |
+| --- | --- |
+| Database foundation | Canonical values live in SQLite `records`; proposed changes live separately in `changes`. |
+| Individual accountability | GitHub numeric IDs identify individual accounts; every change records the author and review decisions record the reviewer. |
+| Submit new data to blank fields | Empty fields in seeded records have editable text areas with a submit button. |
+| Edit existing fields | The same form submits before/after values for filled fields. |
+| Optional admin review | An administrator can approve/reject pending contributions or toggle immediate publication. Gate changes affect new submissions; old pending changes still require review. |
+| Simple access | Continue with GitHub reuses an existing account without requesting email/repository scope. The administrator supplies the OAuth app configuration once. |
+| Easy UX | Contributors see plain labeled fields and save/review buttons, plus visible status/history; no PR workflow is required of contributors. |
+
+### Pros
+
+- One startup command for a credential-free, explicitly synthetic local demonstration; no dependency downloads.
+- Clear separation of canonical and pending values, stable user attribution, atomic approval and audit history.
+- Explicit administrator IDs, session CSRF protection, escaped output, and stale-value conflict detection.
+- Review can be toggled without losing pending work or change history.
+- Twelve automated database and HTTP tests cover permissions, persistence, rejection, conflicts, gate transitions, and mocked OAuth state/identity handling.
+
+### Cons and follow-up work
+
+- This is custom application code to maintain, rather than an off-the-shelf managed service. SQLite is common; the UI/review layer is bespoke.
+- The local development HTTP server and in-memory sessions are unsuitable for shared production deployment. HTTPS, durable sessions, operational controls, backups and membership policy need design before hosting.
+- A real GitHub OAuth app must be configured by the reviewer/operator. Provider calls are mocked in tests; a live credentialed OAuth round trip is not claimed as tested.
+- No live co-editing, schema editor, bulk removal of a user's historical contributions, or creation/deletion of whole records. The must-have blank-field and existing-field workflows are demonstrated; broader workflows remain extensions.
+- Conflict detection compares before-values and prevents overwriting a different current value; it is not a full versioned collaborative merge engine.
