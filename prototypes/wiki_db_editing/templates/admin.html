@@ -1,0 +1,12 @@
+{% extends 'base.html' %}{% block body %}<h2>Admin</h2>
+<form method="post" action="{{ url_for('toggle_gate') }}">Review gate is <b>{{ 'ON' if review_gate else 'OFF' }}</b>
+<input type="hidden" name="on" value="{{ '0' if review_gate else '1' }}"><button>Turn {{ 'off' if review_gate else 'on' }}</button></form>
+<h3>Pending changes ({{ pending|length }})</h3><table><tr><th>#</th><th>By</th><th>Target</th>{% for f in fields %}<th>{{ f }}</th>{% endfor %}<th></th></tr>
+{% for p in pending %}<tr><td>{{ p.id }}</td><td>{{ p.author }}</td><td>{{ 'edit of "%s"'|format(p.old_name) if p.entry_id else 'new' }}</td>
+{% for f in fields %}<td>{{ p[f] }}</td>{% endfor %}<td>
+<form method="post" action="{{ url_for('review', pid=p.id, action='approve') }}" style="display:inline"><button>Approve</button></form>
+<form method="post" action="{{ url_for('review', pid=p.id, action='reject') }}" style="display:inline"><button>Reject</button></form></td></tr>{% endfor %}</table>
+<h3>Users</h3><table><tr><th>Name</th><th>Login via</th><th>Email</th><th>Status</th><th></th></tr>
+{% for u in users %}<tr><td>{{ u.name }}</td><td>{{ u.provider }}</td><td>{{ u.email }}</td><td>{{ 'banned' if u.is_banned else ('admin' if u.is_admin else 'contributor') }}</td>
+<td>{% if not u.is_admin and not u.is_banned %}<form method="post" action="{{ url_for('ban', uid=u.id) }}"><button>Ban &amp; reject pending</button></form>{% endif %}</td></tr>{% endfor %}</table>
+{% endblock %}

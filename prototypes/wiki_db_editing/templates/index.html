@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block body %}<h2>Entries</h2>
+{% if user %}<p><a class="btn" href="{{ url_for('edit') }}">+ Add entry</a></p>{% endif %}
+<table><tr>{% for f in fields %}<th>{{ f|capitalize }}</th>{% endfor %}<th>Last edit by</th><th></th></tr>
+{% for e in entries %}<tr>{% for f in fields %}<td>{{ e[f] }}</td>{% endfor %}<td>{{ e.editor }}</td>
+<td>{% if user %}<a href="{{ url_for('edit', entry_id=e.id) }}">Edit</a> | {% endif %}<a href="{{ url_for('history', entry_id=e.id) }}">History</a></td></tr>{% endfor %}
+</table>{% endblock %}

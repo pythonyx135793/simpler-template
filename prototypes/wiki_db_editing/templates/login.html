@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block body %}<h2>Log in</h2>
+{% for p in providers %}<p><a class="btn" href="{{ url_for('oauth_start', provider=p) }}">Continue with {{ p|capitalize }}</a></p>{% endfor %}
+{% if not providers %}<p>No OAuth provider configured (set GITHUB_CLIENT_ID / GOOGLE_CLIENT_ID).</p>{% endif %}
+{% if dev_login %}<h3>Dev login (testing only)</h3><form method="post" action="{{ url_for('dev_login') }}">
+<input name="name" placeholder="name" required> <label><input type="checkbox" name="admin"> admin</label> <button>Log in</button></form>{% endif %}
+{% endblock %}
